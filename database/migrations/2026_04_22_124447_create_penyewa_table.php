@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('foto_sim')->nullable();
             $table->string('no_telepon', 20)->nullable();
             $table->string('email')->nullable();
-            $table->foreignId('id_user')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreign('id_user')->references('id_user')->on('users')->onDelete('set null');
             $table->timestamp('tgl_gabung')->useCurrent();
             $table->timestamps();
         });
