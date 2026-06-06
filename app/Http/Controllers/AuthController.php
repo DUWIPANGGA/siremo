@@ -86,7 +86,7 @@ class AuthController extends Controller
         // Menyimpan data ke kolom database yang sesuai
         $user = User::create([
             'username'     => $request->username,
-            'nama_lengkap' => $request->nama_lengkap,
+            'name' => $request->nama_lengkap,
             'email'        => $request->email,
             'password'     => Hash::make($request->password),
             'role'         => 'admin', // default role
