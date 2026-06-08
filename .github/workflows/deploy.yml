@@ -34,6 +34,8 @@ jobs:
       DB_DATABASE: testing_db
       DB_USERNAME: root
       DB_PASSWORD: ""
+      BCRYPT_ROUNDS: 4
+      COMPOSER_PROCESS_TIMEOUT: 0
 
     steps:
       - name: Checkout code
