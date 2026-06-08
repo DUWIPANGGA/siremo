@@ -40,75 +40,84 @@ class MobilController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'merek'               => 'required|string|max:100',
-            'model'               => 'required|string|max:100',
-            'plat_nomor'          => 'required|string|max:20|unique:mobil,plat_nomor',
-            'tahun'               => 'required|digits:4|integer',
-            'warna'               => 'required|string|max:50',
-            'tarif_sewa_per_hari' => 'required|integer|min:0',
-            'status_ketersediaan' => 'required|in:Tersedia,Disewa,Perawatan',
-            'kategori'            => 'nullable|string|max:100',
-            'deskripsi'           => 'nullable|string',
-            'foto'                => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+{
+    $request->validate([
+        'merek' => 'required|string|max:100',
+        'model' => 'required|string|max:100',
+        'plat_nomor' => 'required|string|max:20|unique:mobil,plat_nomor',
+        'tahun' => 'required|digits:4|integer',
+        'warna' => 'required|string|max:50',
+        'tarif_sewa_per_hari' => 'required|integer|min:0',
+        'status_ketersediaan' => 'required|in:Tersedia,Disewa,Perawatan',
+        'kategori' => 'nullable|string|max:100',
+        'deskripsi' => 'nullable|string',
+        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
-        $data = $request->except('foto');
+    $data = $request->except('foto', 'fasilitas'); // Pastikan fasilitas tidak masuk ke $data
 
-        if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('mobil', 'public');
+    if ($request->hasFile('foto')) {
+        $data['foto'] = $request->file('foto')->store('mobil', 'public');
+    }
+
+    // 1. Simpan data mobil dulu agar punya ID
+    $mobil = Mobil::create($data);
+
+    // 2. Baru simpan fasilitas ke tabel pivot
+    if ($request->has('fasilitas')) {
+        $mobil->fasilitas()->sync($request->fasilitas);
+    }
+
+    return redirect()->route('admin.kendaraan.index')
+        ->with('success', 'Kendaraan berhasil ditambahkan.');
+}
+
+public function update(Request $request, $id)
+{
+    $kendaraan = Mobil::findOrFail($id);
+
+    $request->validate([
+        'merek' => 'required|string|max:100',
+        'model' => 'required|string|max:100',
+        'plat_nomor' => 'required|string|max:20|unique:mobil,plat_nomor,'.$id.',id_mobil',
+        'tahun' => 'required|digits:4|integer',
+        'warna' => 'required|string|max:50',
+        'tarif_sewa_per_hari' => 'required|integer|min:0',
+        'status_ketersediaan' => 'required|in:Tersedia,Disewa,Perawatan',
+        'kategori' => 'nullable|string|max:100',
+        'deskripsi' => 'nullable|string',
+        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    $data = $request->except('foto', 'fasilitas');
+
+    if ($request->hasFile('foto')) {
+        if ($kendaraan->foto && Storage::disk('public')->exists($kendaraan->foto)) {
+            Storage::disk('public')->delete($kendaraan->foto);
         }
-
-        Mobil::create($data);
-
-        return redirect()->route('admin.kendaraan.index')
-            ->with('success', 'Kendaraan berhasil ditambahkan.');
+        $data['foto'] = $request->file('foto')->store('mobil', 'public');
     }
 
-    public function show($id)
-    {
-        $kendaraan = Mobil::findOrFail($id);
-        return view('admin.kendaraan.show', compact('kendaraan'));
+    // 1. Update data mobil
+    $kendaraan->update($data);
+
+    // 2. Update fasilitas (Logika sync ada sebelum return)
+    if ($request->has('fasilitas')) {
+        $kendaraan->fasilitas()->sync($request->fasilitas);
+    } else {
+        $kendaraan->fasilitas()->detach();
     }
 
-    public function edit($id)
-    {
-        $kendaraan = Mobil::findOrFail($id);
-        return view('admin.kendaraan.edit', compact('kendaraan'));
-    }
+    return redirect()->route('admin.kendaraan.index')
+        ->with('success', 'Kendaraan berhasil diperbarui.');
+}
 
-    public function update(Request $request, $id)
-    {
-        $kendaraan = Mobil::findOrFail($id);
-
-        $request->validate([
-            'merek'               => 'required|string|max:100',
-            'model'               => 'required|string|max:100',
-            'plat_nomor'          => 'required|string|max:20|unique:mobil,plat_nomor,'.$id.',id_mobil',
-            'tahun'               => 'required|digits:4|integer',
-            'warna'               => 'required|string|max:50',
-            'tarif_sewa_per_hari' => 'required|integer|min:0',
-            'status_ketersediaan' => 'required|in:Tersedia,Disewa,Perawatan',
-            'kategori'            => 'nullable|string|max:100',
-            'deskripsi'           => 'nullable|string',
-            'foto'                => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        $data = $request->except('foto');
-
-        if ($request->hasFile('foto')) {
-            if ($kendaraan->foto && Storage::disk('public')->exists($kendaraan->foto)) {
-                Storage::disk('public')->delete($kendaraan->foto);
-            }
-            $data['foto'] = $request->file('foto')->store('mobil', 'public');
-        }
-
-        $kendaraan->update($data);
-
-        return redirect()->route('admin.kendaraan.index')
-            ->with('success', 'Kendaraan berhasil diperbarui.');
-    }
+// Tambahkan ini di Admin\MobilController jika Anda butuh fitur lihat detail di dashboard admin
+public function show($id)
+{
+    $mobil = Mobil::with('fasilitas')->findOrFail($id);
+    return view('admin.kendaraan.show', compact('mobil'));
+}
 
     public function destroy($id)
     {

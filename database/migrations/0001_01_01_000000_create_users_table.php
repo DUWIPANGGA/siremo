@@ -18,6 +18,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            $table->string('no_telepon', 20)->nullable();
+            $table->string('cabang_rental')->nullable();
+            $table->text('alamat')->nullable();
+            $table->string('status')->default('aktif');
+
             $table->enum('role', ['superadmin', 'admin', 'penyewa'])->default('admin');
             $table->rememberToken();
             $table->timestamps();

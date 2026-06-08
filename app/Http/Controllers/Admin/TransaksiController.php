@@ -8,6 +8,7 @@ use App\Models\Mobil;
 use App\Models\Penyewa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Notifikasi;
 
 class TransaksiController extends Controller
 {
@@ -118,10 +119,22 @@ class TransaksiController extends Controller
                 ->store('bukti', 'public');
         }
 
-        $transaksi->update($data);
+        $statusLama = $transaksi->status_transaksi;
+        if ($statusLama !== $request->status_transaksi) {
+        Notifikasi::create([
+            'user_id'      => $transaksi->penyewa->id_user, // Asumsi ada relasi ke user
+            'judul'        => 'Update Status Pesanan',
+            'pesan'        => "Status pesanan Anda telah berubah menjadi: " . $request->status_transaksi,
+            'tipe'         => 'sistem',
+            'icon'         => Notifikasi::iconTipe('sistem'),
+            'warna'        => Notifikasi::warnaTipe('sistem'),
+            'url'          => "/history/" . $transaksi->id_transaksi,
+            'id_transaksi' => $transaksi->id_transaksi,
+        ]);
 
         return redirect()->route('admin.transaksi.index')
             ->with('success', 'Transaksi berhasil diperbarui.');
+    }
     }
 
     public function destroy($id)
@@ -143,14 +156,25 @@ class TransaksiController extends Controller
      * Tandai transaksi sebagai Selesai (Verify Payment)
      */
     public function selesai($id)
-    {
-        $transaksi = TransaksiSewa::findOrFail($id);
-        $transaksi->update(['status_transaksi' => 'Selesai']);
+{
+    $transaksi = TransaksiSewa::findOrFail($id);
+    $transaksi->update(['status_transaksi' => 'Selesai']);
 
-        // Kembalikan status mobil → Tersedia
-        Mobil::where('id_mobil', $transaksi->id_mobil)
-            ->update(['status_ketersediaan' => 'Tersedia']);
+    Mobil::where('id_mobil', $transaksi->id_mobil)
+        ->update(['status_ketersediaan' => 'Tersedia']);
 
-        return back()->with('success', 'Transaksi berhasil diverifikasi dan ditandai Selesai.');
-    }
+    // NOTIFIKASI PENGEMBALIAN
+    Notifikasi::create([
+        'user_id'      => $transaksi->penyewa->id_user,
+        'judul'        => 'Pengembalian Diterima',
+        'pesan'        => 'Mobil telah diterima. Terima kasih telah menyewa di SIREMO.',
+        'tipe'         => 'pengembalian',
+        'icon'         => Notifikasi::iconTipe('pengembalian'),
+        'warna'        => Notifikasi::warnaTipe('pengembalian'),
+        'url'          => "/history/" . $transaksi->id_transaksi,
+        'id_transaksi' => $transaksi->id_transaksi,
+    ]);
+
+    return back()->with('success', 'Transaksi berhasil diverifikasi dan ditandai Selesai.');
+}
 }

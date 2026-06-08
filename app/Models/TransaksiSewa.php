@@ -26,6 +26,8 @@ class TransaksiSewa extends Model
         'ulasan_denda',
         'status_transaksi', // Aktif | Selesai | Batal | Disewa
         'bukti_pembayaran',
+        'bukti_ktp',
+        'bukti_sim',
     ];
 
     protected $casts = [

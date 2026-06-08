@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Fasilitas;
 
 class Mobil extends Model
 {
@@ -33,6 +34,11 @@ class Mobil extends Model
     public function ulasan()
     {
         return $this->hasMany(Ulasan::class, 'id_mobil', 'id_mobil');
+    }
+
+    public function fasilitas()
+    {
+        return $this->belongsToMany(Fasilitas::class, 'mobil_fasilitas', 'id_mobil', 'id_fasilitas');
     }
 
     public function getNamaLengkapAttribute(): string
