@@ -9,14 +9,12 @@ use Illuminate\Http\Request;
 
 class MobilController extends Controller
 {
-    // API untuk daftar semua mobil
     public function indexApi()
     {
-        $mobil = Mobil::where('status_ketersediaan', 'Tersedia')->get();
-        return response()->json(['data' => $mobil], 200);
+        $mobil = Mobil::with('fasilitas')->where('status_ketersediaan', 'Tersedia')->get();
+        return MobilResource::collection($mobil);
     }
 
-    // API untuk detail mobil
     public function show($id)
     {
         $mobil = Mobil::with('fasilitas')->find($id);
@@ -27,25 +25,28 @@ class MobilController extends Controller
 
         return response()->json([
             'message' => 'Detail mobil berhasil diambil',
-            'data' => $mobil
+            'data' => new MobilResource($mobil)
         ], 200);
     }
 
     public function search(Request $request)
-{
-    $query = Mobil::query();
+    {
+        $query = Mobil::with('fasilitas')->where('status_ketersediaan', 'Tersedia');
 
-    if ($request->has('q')) {
-        $query->where('nama_mobil', 'like', '%' . $request->q . '%')
-              ->orWhere('merek', 'like', '%' . $request->q . '%');
+        if ($request->has('q')) {
+            $keyword = $request->q;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('merek', 'like', '%' . $keyword . '%')
+                  ->orWhere('model', 'like', '%' . $keyword . '%');
+            });
+        }
+
+        if ($request->has('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        $mobil = $query->get();
+
+        return MobilResource::collection($mobil);
     }
-
-    if ($request->has('kategori')) {
-        $query->where('kategori', $request->kategori);
-    }
-
-    $mobil = $query->where('status_ketersediaan', 'Tersedia')->get();
-
-    return response()->json(['data' => $mobil]);
-}
 }

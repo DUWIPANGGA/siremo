@@ -11,6 +11,7 @@ class Notifikasi extends Model
     protected $primaryKey = 'id_notifikasi';
 
     protected $fillable = [
+        'user_id',
         'judul',
         'pesan',
         'tipe',      // pesanan_sewa | pembayaran | pengembalian | sistem

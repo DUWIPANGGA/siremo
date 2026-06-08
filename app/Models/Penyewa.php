@@ -18,6 +18,7 @@ class Penyewa extends Model
         'no_ktp',
         'no_sim',
         'foto_sim',
+        'foto_profile',
         'no_telepon',
         'email',
         'id_user',

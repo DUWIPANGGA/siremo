@@ -124,36 +124,42 @@ class AuthController extends Controller
             ->with('success', 'Akun Admin berhasil dibuat! Selamat datang, ' . $user->nama_lengkap . '.');
     }
 
-    //API Register
     public function apiRegister(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:6',
-        'no_telepon' => 'required',
-        'username' => 'required|unique:users',
-        // tambahkan validasi kolom lainnya
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
+            'no_telepon' => 'required',
+            'username' => 'required|unique:users',
+        ]);
 
-    $user = User::create([
-        
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password), // WAJIB di-hash!
-        'no_telepon' => $request->no_telepon,
-        'username' => $request->username,
-        'role' => 'penyewa', // Default role
-    ]);
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'no_telepon' => $request->no_telepon,
+            'username' => $request->username,
+            'role' => 'penyewa',
+            'status' => 'aktif',
+        ]);
 
-    $token = $user->createToken('auth_token')->plainTextToken;
+        \App\Models\Penyewa::create([
+            'id_user' => $user->id_user,
+            'nama' => $request->name,
+            'no_telepon' => $request->no_telepon,
+            'email' => $request->email,
+            'tgl_gabung' => now(),
+        ]);
 
-    return response()->json([
-        'message' => 'Registrasi berhasil',
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-    ], 201);
-}
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Registrasi berhasil',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 201);
+    }
 
     /* ══════════════════════════════════════════
      |  LUPA PASSWORD

@@ -5,62 +5,65 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage; // Penting untuk hapus/upload file
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
-    // GET /api/profile
     public function getProfile(Request $request)
     {
         return response()->json([
             'message' => 'Profil berhasil diambil',
-            'data' => $request->user()->load('penyewa') 
+            'data' => $request->user()->load('penyewa')
         ], 200);
     }
 
-    // POST /api/profile/update
-    // Saya sarankan gunakan POST karena FormData (foto) paling stabil di method POST
     public function updateProfile(Request $request)
     {
         $user = $request->user();
-        $penyewa = $user->penyewa;
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'telepon' => 'required|string|max:15',
             'alamat' => 'required|string|max:255',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi file gambar
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 1. Update Tabel Users
         $user->update(['name' => $request->name]);
 
-        // 2. Update Tabel Penyewa (Telepon & Alamat)
-        $penyewa->update([
-            'no_telepon' => $request->telepon,
-            'alamat' => $request->alamat
-        ]);
+        $penyewa = $user->penyewa;
+        if ($penyewa) {
+            $updateData = [
+                'no_telepon' => $request->telepon,
+                'alamat' => $request->alamat,
+            ];
 
-        // 3. Logic Update Foto Profil
-        if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
-            if ($penyewa->foto_profile && Storage::disk('public')->exists($penyewa->foto_profile)) {
-                Storage::disk('public')->delete($penyewa->foto_profile);
+            if ($request->hasFile('foto')) {
+                if ($penyewa->foto_profile && Storage::disk('public')->exists($penyewa->foto_profile)) {
+                    Storage::disk('public')->delete($penyewa->foto_profile);
+                }
+                $path = $request->file('foto')->store('profiles', 'public');
+                $updateData['foto_profile'] = $path;
             }
 
-            // Simpan foto baru ke folder 'profiles'
-            $path = $request->file('foto')->store('profiles', 'public');
-            $penyewa->update(['foto_profile' => $path]);
+            $penyewa->update($updateData);
+        } else {
+            \App\Models\Penyewa::create([
+                'id_user' => $user->id_user,
+                'nama' => $request->name,
+                'no_telepon' => $request->telepon,
+                'alamat' => $request->alamat,
+                'email' => $user->email,
+                'tgl_gabung' => now(),
+            ]);
         }
 
         return response()->json([
             'message' => 'Profil berhasil diperbarui',
-            'data' => $user->load('penyewa') // Kembalikan data terbaru agar UI Flutter langsung refresh
+            'data' => $user->fresh()->load('penyewa')
         ], 200);
     }
 
-    // POST /api/profile/change-password
     public function changePassword(Request $request)
     {
         $request->validate([

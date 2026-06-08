@@ -6,20 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('denda_log', function (Blueprint $table) {
-            $table->id();
+            $table->id('id_denda');
+            $table->unsignedBigInteger('id_transaksi');
+            $table->unsignedBigInteger('jumlah_denda')->default(0);
+            $table->text('keterangan')->nullable();
+            $table->timestamp('tanggal_denda')->useCurrent();
             $table->timestamps();
+
+            $table->foreign('id_transaksi')->references('id_transaksi')->on('transaksi_sewa')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('denda_log');

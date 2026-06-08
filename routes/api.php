@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/change-password', [UserController::class, 'changePassword']);
 
     // Mobil
-    Route::get('/mobil', [MobilController::class, 'index']);
+    Route::get('/mobil', [MobilController::class, 'indexApi']);
     Route::get('/mobil/{id}', [MobilController::class, 'show']);
 
     // Booking / Transaksi
