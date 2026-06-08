@@ -59,13 +59,6 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
-      # --- TAMBAHKAN PERINTAH MIGRASI SEBELUM TEST ---
-      - name: Clear and Cache
-        run: |
-          php artisan config:clear
-          php artisan cache:clear
-          php artisan config:cache
-
       - name: Run Migrations
         run: php artisan migrate --force
 
