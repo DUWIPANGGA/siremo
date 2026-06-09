@@ -21,6 +21,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Fallback untuk serve file storage (karena D: exFAT tidak support symlink)
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    return response()->file($fullPath);
+})->where('path', '.*');
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes

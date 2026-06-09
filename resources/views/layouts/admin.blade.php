@@ -383,9 +383,9 @@
 
     <div class="sidebar-footer">
         <div class="user-card">
-            <div class="user-avatar">{{ strtoupper(substr(auth()->user()->nama_lengkap ?? 'A', 0, 2)) }}</div>
+            <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 2)) }}</div>
             <div class="user-info">
-                <span>{{ auth()->user()->nama_lengkap ?? 'Admin' }}</span>
+                <span>{{ auth()->user()->name ?? 'Admin' }}</span>
                 <small>{{ auth()->user()->email ?? '' }}</small>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="ms-auto">
@@ -460,7 +460,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-secondary">Nama Lengkap</label>
-                        <input type="text" class="form-control bg-light text-muted border-0 custom-input" value="{{ auth()->user()->nama_lengkap }}" readonly>
+                        <input type="text" class="form-control bg-light text-muted border-0 custom-input" value="{{ auth()->user()->name }}" readonly>
                     </div>
 
                     <div class="mb-3">

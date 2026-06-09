@@ -22,7 +22,7 @@ class MobilResource extends JsonResource
             'status' => $this->status_ketersediaan,
             'kategori' => $this->kategori,
             'deskripsi' => $this->deskripsi,
-            'foto_url' => $this->foto ? url('storage/' . $this->foto) : null,
+            'foto_url' => $this->foto ? $request->getSchemeAndHttpHost() . '/storage/' . $this->foto : null,
             'rating' => $this->whenLoaded('ulasan', function () {
                 return $this->ulasan->avg('rating') ? round((float) $this->ulasan->avg('rating'), 1) : 0.0;
             }),

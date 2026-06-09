@@ -300,7 +300,6 @@
                     <td class="td-bukti">
                         @if($t->bukti_pembayaran)
                             @php
-                                // Cek apakah isian adalah path file atau kode bukti
                                 $isFoto = str_contains($t->bukti_pembayaran, '.') ||
                                           str_contains($t->bukti_pembayaran, '/');
                             @endphp
@@ -309,8 +308,12 @@
                                         onclick="lihatBukti('{{ asset('storage/' . $t->bukti_pembayaran) }}', 'TR-{{ $t->id_transaksi }}')">
                                     <img src="{{ asset('storage/' . $t->bukti_pembayaran) }}" alt="Bukti">
                                 </button>
+                                @if($t->status_transaksi === 'Aktif')
+                                    <div style="font-size:10px;color:#E8622A;font-weight:600;margin-top:4px;">
+                                        <i class="bi bi-clock-history"></i> Verifikasi
+                                    </div>
+                                @endif
                             @else
-                                {{-- Kode bukti teks (misal BUKTI_10_xxx) --}}
                                 <button class="bukti-thumb-wrap"
                                         title="{{ $t->bukti_pembayaran }}"
                                         onclick="alert('Kode Bukti: {{ $t->bukti_pembayaran }}')">
@@ -327,13 +330,14 @@
                     {{-- Status --}}
                     <td>
                         @php
+                            $isMenunggu = $t->status_transaksi === 'Aktif' && $t->bukti_pembayaran;
                             $statusMap = [
                                 'Selesai' => ['pill' => 'status-selesai',  'label' => 'LUNAS'],
-                                'Aktif'   => ['pill' => 'status-aktif',    'label' => 'AKTIF'],
+                                'Aktif'   => ['pill' => 'status-aktif',    'label' => $isMenunggu ? 'MENUNGGU' : 'AKTIF'],
                                 'Disewa'  => ['pill' => 'status-disewa',   'label' => 'DISEWA'],
                                 'Batal'   => ['pill' => 'status-batal',    'label' => 'BATAL'],
                             ];
-                            $st = $statusMap[$t->status_transaksi]
+                            $st = $statusMap[$isMenunggu ? 'Aktif' : $t->status_transaksi]
                                 ?? ['pill' => 'status-menunggu', 'label' => 'MENUNGGU'];
                         @endphp
                         <span class="status-pill {{ $st['pill'] }}">{{ $st['label'] }}</span>

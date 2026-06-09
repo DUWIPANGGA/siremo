@@ -309,19 +309,17 @@
                     <td class="td-aksi">
                         <div class="d-flex gap-2 align-items-center justify-content-center flex-wrap">
                             @if($t->status_transaksi !== 'Selesai')
-                                @if($terlambat || $t->denda > 0)
-                                    <button class="btn-input-denda"
-                                            onclick="bukaModalDenda(
-                                                {{ $t->id_transaksi }},
-                                                '{{ addslashes($t->penyewa->nama ?? '') }}',
-                                                {{ $selisihHari }},
-                                                {{ $t->mobil->tarif_sewa_per_hari ?? 0 }},
-                                                {{ $t->denda }},
-                                                '{{ addslashes($t->ulasan_denda ?? '') }}'
-                                            )">
-                                        Input Denda
-                                    </button>
-                                @endif
+                                <button class="btn-input-denda"
+                                        onclick="bukaModalDenda(
+                                            {{ $t->id_transaksi }},
+                                            '{{ addslashes($t->penyewa->nama ?? '') }}',
+                                            {{ $selisihHari }},
+                                            {{ $t->mobil->tarif_sewa_per_hari ?? 0 }},
+                                            {{ $t->denda }},
+                                            '{{ addslashes($t->ulasan_denda ?? '') }}'
+                                        )">
+                                    Input Denda
+                                </button>
 
                                 <form action="{{ route('admin.pengembalian.proses', $t->id_transaksi) }}"
                                       method="POST" class="d-inline">

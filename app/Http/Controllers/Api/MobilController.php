@@ -11,13 +11,13 @@ class MobilController extends Controller
 {
     public function indexApi()
     {
-        $mobil = Mobil::with('fasilitas')->where('status_ketersediaan', 'Tersedia')->get();
+        $mobil = Mobil::with('fasilitas', 'ulasan')->where('status_ketersediaan', 'Tersedia')->get();
         return MobilResource::collection($mobil);
     }
 
     public function show($id)
     {
-        $mobil = Mobil::with('fasilitas')->find($id);
+        $mobil = Mobil::with('fasilitas', 'ulasan')->find($id);
 
         if (!$mobil) {
             return response()->json(['message' => 'Mobil tidak ditemukan'], 404);
@@ -31,7 +31,7 @@ class MobilController extends Controller
 
     public function search(Request $request)
     {
-        $query = Mobil::with('fasilitas')->where('status_ketersediaan', 'Tersedia');
+        $query = Mobil::with('fasilitas', 'ulasan')->where('status_ketersediaan', 'Tersedia');
 
         if ($request->has('q')) {
             $keyword = $request->q;

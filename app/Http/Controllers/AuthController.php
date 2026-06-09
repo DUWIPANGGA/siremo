@@ -35,16 +35,15 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
-            // Saringan pengalihan berdasarkan Role saat LOGIN
-            if ($user->role === 'super_admin') {
-                return redirect()->route('superadmin.dashboard'); // Jika super admin
+            if ($user->role === 'superadmin') {
+                return redirect()->route('admin.dashboard');
             }
 
             if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard'); // Jika admin biasa
+                return redirect()->route('admin.dashboard');
             }
 
-            return redirect()->route('penyewa.home'); // Jika penyewa tembus ke web
+            return redirect()->route('penyewa.home');
         }
 
         return back()
@@ -121,7 +120,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         return redirect()->route('admin.dashboard')
-            ->with('success', 'Akun Admin berhasil dibuat! Selamat datang, ' . $user->nama_lengkap . '.');
+            ->with('success', 'Akun Admin berhasil dibuat! Selamat datang, ' . $user->name . '.');
     }
 
     public function apiRegister(Request $request)

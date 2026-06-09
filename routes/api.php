@@ -42,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Pembatalan
     Route::post('/booking/{id}/cancel', [TransaksiController::class, 'cancelBookingApi']);
 
+    // Upload bukti pembayaran
+    Route::post('/booking/{id}/pay', [TransaksiController::class, 'uploadPayment']);
+
     // Pencarian
     Route::get('/mobil/search', [MobilController::class, 'search']);
 

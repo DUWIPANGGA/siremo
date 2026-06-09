@@ -39,6 +39,12 @@ class MobilController extends Controller
         return view('admin.kendaraan.create');
     }
 
+    public function edit($id)
+    {
+        $kendaraan = Mobil::with('fasilitas')->findOrFail($id);
+        return view('admin.kendaraan.edit', compact('kendaraan'));
+    }
+
     public function store(Request $request)
 {
     $request->validate([
@@ -54,16 +60,14 @@ class MobilController extends Controller
         'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
-    $data = $request->except('foto', 'fasilitas'); // Pastikan fasilitas tidak masuk ke $data
+    $data = $request->except('foto', 'fasilitas');
 
     if ($request->hasFile('foto')) {
         $data['foto'] = $request->file('foto')->store('mobil', 'public');
     }
 
-    // 1. Simpan data mobil dulu agar punya ID
     $mobil = Mobil::create($data);
 
-    // 2. Baru simpan fasilitas ke tabel pivot
     if ($request->has('fasilitas')) {
         $mobil->fasilitas()->sync($request->fasilitas);
     }
@@ -101,11 +105,8 @@ public function update(Request $request, $id)
     // 1. Update data mobil
     $kendaraan->update($data);
 
-    // 2. Update fasilitas (Logika sync ada sebelum return)
     if ($request->has('fasilitas')) {
         $kendaraan->fasilitas()->sync($request->fasilitas);
-    } else {
-        $kendaraan->fasilitas()->detach();
     }
 
     return redirect()->route('admin.kendaraan.index')

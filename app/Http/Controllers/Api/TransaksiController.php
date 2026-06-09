@@ -47,9 +47,47 @@ class TransaksiController extends Controller
         $transaksi = TransaksiSewa::with('mobil')
             ->where('id_penyewa', $penyewa->id_penyewa)
             ->orderBy('id_transaksi', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($t) use ($request) {
+                $t->bukti_pembayaran_url = $t->bukti_pembayaran
+                    ? $request->getSchemeAndHttpHost() . '/storage/' . $t->bukti_pembayaran
+                    : null;
+                return $t;
+            });
 
         return response()->json(['data' => $transaksi], 200);
+    }
+
+    public function uploadPayment($id, Request $request)
+    {
+        $penyewa = $request->user()->penyewa;
+        if (!$penyewa) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        $transaksi = TransaksiSewa::where('id_transaksi', $id)
+            ->where('id_penyewa', $penyewa->id_penyewa)
+            ->first();
+
+        if (!$transaksi) {
+            return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+        }
+
+        if ($transaksi->status_transaksi !== 'Aktif') {
+            return response()->json(['message' => 'Pembayaran hanya bisa diupload untuk transaksi dengan status Aktif'], 400);
+        }
+
+        $request->validate([
+            'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $path = $request->file('bukti_pembayaran')->store('bukti', 'public');
+        $transaksi->update(['bukti_pembayaran' => $path]);
+
+        return response()->json([
+            'message' => 'Bukti pembayaran berhasil diupload, menunggu verifikasi admin.',
+            'bukti_pembayaran' => $request->getSchemeAndHttpHost() . '/storage/' . $path,
+        ], 200);
     }
 
     public function cancelBookingApi($id, Request $request)

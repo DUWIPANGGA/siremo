@@ -119,22 +119,24 @@ class TransaksiController extends Controller
                 ->store('bukti', 'public');
         }
 
+        $transaksi->update($data);
+
         $statusLama = $transaksi->status_transaksi;
         if ($statusLama !== $request->status_transaksi) {
-        Notifikasi::create([
-            'user_id'      => $transaksi->penyewa->id_user, // Asumsi ada relasi ke user
-            'judul'        => 'Update Status Pesanan',
-            'pesan'        => "Status pesanan Anda telah berubah menjadi: " . $request->status_transaksi,
-            'tipe'         => 'sistem',
-            'icon'         => Notifikasi::iconTipe('sistem'),
-            'warna'        => Notifikasi::warnaTipe('sistem'),
-            'url'          => "/history/" . $transaksi->id_transaksi,
-            'id_transaksi' => $transaksi->id_transaksi,
-        ]);
+            Notifikasi::create([
+                'user_id'      => $transaksi->penyewa->id_user,
+                'judul'        => 'Update Status Pesanan',
+                'pesan'        => "Status pesanan Anda telah berubah menjadi: " . $request->status_transaksi,
+                'tipe'         => 'sistem',
+                'icon'         => Notifikasi::iconTipe('sistem'),
+                'warna'        => Notifikasi::warnaTipe('sistem'),
+                'url'          => "/history/" . $transaksi->id_transaksi,
+                'id_transaksi' => $transaksi->id_transaksi,
+            ]);
+        }
 
         return redirect()->route('admin.transaksi.index')
             ->with('success', 'Transaksi berhasil diperbarui.');
-    }
     }
 
     public function destroy($id)
