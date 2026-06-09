@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Mobil
     Route::get('/mobil', [MobilController::class, 'indexApi']);
+    Route::get('/mobil/search', [MobilController::class, 'search']);
     Route::get('/mobil/{id}', [MobilController::class, 'show']);
 
     // Booking / Transaksi
@@ -44,9 +45,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Upload bukti pembayaran
     Route::post('/booking/{id}/pay', [TransaksiController::class, 'uploadPayment']);
-
-    // Pencarian
-    Route::get('/mobil/search', [MobilController::class, 'search']);
 
     // Denda
     Route::get('/my-denda', [DendaController::class, 'indexApi']);

@@ -74,6 +74,29 @@ Route::middleware(['auth'])->group(function () {
         return view('penyewa.home');
     })->name('penyewa.home');
 
+    Route::post('/penyewa/upload-bukti/{id}', function (Request $request, $id) {
+        $transaksi = \App\Models\TransaksiSewa::where('id_transaksi', $id)
+            ->where('id_penyewa', $request->user()->penyewa->id_penyewa)
+            ->first();
+
+        if (!$transaksi) {
+            return back()->with('error', 'Transaksi tidak ditemukan.');
+        }
+
+        if ($transaksi->status_transaksi !== 'Aktif') {
+            return back()->with('error', 'Pembayaran hanya bisa diupload untuk transaksi aktif.');
+        }
+
+        $request->validate([
+            'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $path = $request->file('bukti_pembayaran')->store('bukti', 'public');
+        $transaksi->update(['bukti_pembayaran' => $path]);
+
+        return back()->with('success', 'Bukti pembayaran berhasil diupload, menunggu verifikasi admin.');
+    })->name('penyewa.upload-bukti');
+
     /*
     |----------------------------------------------------------------------
     | Admin Routes
